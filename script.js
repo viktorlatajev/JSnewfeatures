@@ -1,36 +1,19 @@
 "use strict";
 
-let number = 10;
+//rest оператор, обратное преобразование spread
+const log = function (a, b, ...other){
+    console.log(a);
+    console.log(b);
+    console.log(other);
 
-function showMessage(text) {
-    console.log(text);
-    //let number = 20;
-    console.log(number);
+};
+
+log('test1', 'test2', 'test3', 'test4');
+
+//парарметры по умолчанию
+function calcOrDouble (first, second = 2){
+    //second = second || 2; //раньше использовали такой способ
+    return first*second;
 }
 
-showMessage("Hello!!!");
-console.log(number);
-
-const server = function(){
-    console.log('server start...');
-};
-
-server();
-
-const calc = (x, y) => x+y;
-// const calc = (x, y) => {
-//    return x+y
-// };
-
-// const calc = x => x+10;
-
-console.log(calc(10,5));
-
-
-const Hello = () => {
-    console.log("Hello!");
-    return Math.PI;
-};
-
-console.log(Hello());
-
+console.log(calcOrDouble(5));
