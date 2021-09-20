@@ -1,123 +1,209 @@
 "use strict";
 
-//свойства-аксессоры get set
+// promise похожи на call-back функции
 
-const person = {
-    name: 'John',
-    age: 28,
+//пример разрастания дерева call-back-ов (call-back hell)
+console.log('Запрос данных...');
 
-    get userAge(){
-        return this.age;
-    },
-    set userAge(num){
-        this.age = num;
-    }
+setTimeout(() => {
+    console.log('Подготовка данных...');
+
+    const product = {
+        name: 'phone',
+        price: 300
+    };
+
+    setTimeout(() => {
+        product.status = 'order';
+        console.log(product);
+    }, 2000);
+
+}, 2000);
+
+// тоже самое, но с использованием Promise
+console.log('Запрос данных...');
+const req = new Promise((resolve, reject) => {
+
+    setTimeout(() => {
+        console.log('Подготовка данных...');
+
+        const product = {
+            name: 'phone',
+            price: 300
+        };
+
+        resolve(product);
+
+    }, 2000);    
+});
+
+req.then((product) => {
+    const req2 = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            product.status = 'order';
+            resolve(product);
+        }, 2000);
+    });
+
+    req2.then((data) => {
+        console.log(data);
+    });
+});
+
+// Рабочий вариант
+console.log('Запрос данных...');
+const req = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        console.log('Подготовка данных...');
+
+        const product = {
+            name: 'phone',
+            price: 300
+        };
+
+        resolve(product);
+
+    }, 2000);
+});
+
+req.then((product) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            product.status = 'order';
+            resolve(product);
+        }, 2000);
+    });
+
+}).then((data) => {
+    console.log(data);
+});
+
+// Рабочий вариант 2
+console.log('Запрос данных...');
+const req = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        console.log('Подготовка данных...');
+
+        const product = {
+            name: 'phone',
+            price: 300
+        };
+
+        resolve(product);
+
+    }, 2000);
+});
+
+req.then((product) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            product.status = 'order';
+            resolve(product);
+        }, 2000);
+    });
+
+}).then((data) => {
+    data.modify = 'true';
+    return data;
+}).then((data) => {
+    console.log(data);
+});
+
+// Рабочий вариант 3 (error)
+console.log('Запрос данных...');
+const req = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        console.log('Подготовка данных...');
+
+        const product = {
+            name: 'phone',
+            price: 300
+        };
+
+        resolve(product);
+
+    }, 2000);
+});
+
+req.then((product) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            product.status = 'order';
+            //resolve(product);
+            reject();
+        }, 2000);
+    });
+
+}).then((data) => {
+    data.modify = 'true';
+    return data;
+}).then((data) => {
+    console.log(data);
+}).catch(() => {
+    console.error('error!')
+}); 
+
+// Рабочий вариант 4 (finally)
+console.log('Запрос данных...');
+const req = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        console.log('Подготовка данных...');
+
+        const product = {
+            name: 'phone',
+            price: 300
+        };
+
+        resolve(product);
+
+    }, 2000);
+});
+
+req.then((product) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            product.status = 'order';
+            resolve(product);
+            reject();
+        }, 2000);
+    });
+
+}).then((data) => {
+    data.modify = 'true';
+    return data;
+}).then((data) => {
+    console.log(data);
+}).catch(() => {
+    console.error('error!')
+}).finally(() => {
+    console.log('Все действия выполнены!');
+});
+
+//------------------------------------------------------
+const test = time => {
+    return new Promise(resolve => {
+        setTimeout(() => resolve(), time);
+    });
 };
 
-//свойства! Поэтому обращаемся без скобок, именно как к свойству, а не к методу
-console.log(person.userAge);
-console.log(person.userAge = 30);
-console.log(person.userAge);
+test(1000).then(() => console.log('1000 ms'));
+test(2000).then(() => console.log('2000 ms'));
 
-//инкапсуляция
+Promise.all([test(4000), test(1000)]).then(() => {
+    console.log('All');
+}); 
+// https://jsonplaceholder.typicode.com/ API
 
-function User (name, age){
-    this.name = name;
-    this.age = age;
+fetch('https://jsonplaceholder.typicode.com/todos/1')
+  .then(response => response.json())
+  .then(json => console.log(json));
 
-    this.say = function(){
-        console.log(`Имя пользователя: ${this.name}, возраст: ${this.age}`);
-    };
-}
-
-const john = new User('John', 22);
-john.age = 30;  //возможно прямое обращение к свойству
-console.log(john.name);
-console.log(john.age);
-john.say();
-
-//с инкапсуляцией
-
-function User2 (name, age){
-    this.name = name;
-    let userAge = age;
-
-    this.say = function(){
-        console.log(`Имя пользователя: ${this.name}, возраст: ${userAge}`);
-    };
-}
-
-const ann = new User('Ann', 22);
-
-//john2.age = 30;  //возможно прямое обращение к свойству
-console.log(ann.name);
-console.log(ann.userAge); //уже не можем обратится к свойству
-ann.say();
-
-///////////////////////////////////////////
-
-function User2 (name, age){
-    this.name = name;
-    let userAge = age;
-
-    this.say = function(){
-        console.log(`Имя пользователя: ${this.name}, возраст: ${userAge}`);
-    };
-
-    this.getAge = function(){
-        return userAge;
+fetch('https://jsonplaceholder.typicode.com/posts', {
+    method: "POST",
+    body: JSON.stringify({name: "Alex"}),
+    headers: {
+        'Content-type': 'application/json'
     }
-    this.setAge = function(age){
-        if(typeof age === 'number' && age > 0 && age <100){
-            userAge = age;
-        }else{
-            console.log('Недопустимое значение!')
-        }
-    }
-}
-
-const kirill = new User3('Kirill', 25);
-
-//kirill.age = 30; //возможно прямое обращение к свойству
-console.log(kirill.name);
-console.log(kirill.userAge); //уже не можем обратится к свойству
-console.log(kirill.getAge());
-kirill.setAge(33);
-kirill.setAge(333);
-kirill.setAge('fwefwe');
-kirill.say();
-
-//////////////////////
-//инкапсуляция . класс
-
-class Author {
-    constructor (name, age){
-        this.name = name;
-        this._age = age; //инкапсуляция поля в классе (договоренность)
-    }
-
-    #surname = 'Maal'; //приватное поле
-
-    say = () => {
-        console.log(`Имя пользователя: ${this.name}, ${this.#surname} возраст: ${this._age}`);
-    }
-
-    get age(){
-        return this._age;
-    }
-    set age(age){
-        if(typeof age === 'number' && age > 0 && age <100){
-            this._age = age;
-        }else{
-            console.log('Недопустимое значение!')
-        }
-    }
-}
-
-const ivan = new Author('Ivan', 25);
-
-console.log(ivan.name);
-ivan.age = 99;
-console.log(ivan.age);
-
-ivan.say();
+})
+  .then(response => response.json())
+  .then(json => console.log(json)); 
